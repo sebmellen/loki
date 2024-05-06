@@ -101,6 +101,30 @@ func (bq *BloomQuerier) FilterChunkRefs(ctx context.Context, tenant string, from
 	preFilterChunks := len(chunkRefs)
 	preFilterSeries := len(grouped)
 
+	// Do not attempt to query too recent bloom data
+	if through.After(model.Now().Add(-1 * bq.limits.BloomGatewaySkipFilterWithin(tenant))) {
+		level.Debug(logger).Log(
+			"msg", "skip too recent chunks",
+			"tenant", tenant,
+			"from", from.Time(),
+			"through", through.Time(),
+			"responses", 0,
+			"preFilterChunks", preFilterChunks,
+			"postFilterChunks", preFilterChunks,
+			"filteredChunks", 0,
+			"preFilterSeries", preFilterSeries,
+			"postFilterSeries", preFilterSeries,
+			"filteredSeries", 0,
+		)
+
+		bq.metrics.chunksTotal.Add(float64(preFilterChunks))
+		bq.metrics.chunksFiltered.Add(0)
+		bq.metrics.seriesTotal.Add(float64(preFilterSeries))
+		bq.metrics.seriesFiltered.Add(0)
+
+		return chunkRefs, nil
+	}
+
 	responses := make([][]*logproto.GroupedChunkRefs, 0, 2)
 	// We can perform requests sequentially, because most of the time the request
 	// only covers a single day, and if not, it's at most two days.
@@ -153,7 +177,6 @@ func (bq *BloomQuerier) FilterChunkRefs(ctx context.Context, tenant string, from
 		"preFilterSeries", preFilterSeries,
 		"postFilterSeries", postFilterSeries,
 		"filteredSeries", preFilterSeries-postFilterSeries,
-		"operation", "bloomquerier.FilterChunkRefs",
 	)
 
 	bq.metrics.chunksTotal.Add(float64(preFilterChunks))

@@ -2,6 +2,7 @@ package bloomgateway
 
 import (
 	"flag"
+	"time"
 )
 
 // Config configures the Bloom Gateway component.
@@ -48,4 +49,5 @@ type Limits interface {
 	CacheLimits
 	BloomGatewayShardSize(tenantID string) int
 	BloomGatewayEnabled(tenantID string) bool
+	BloomGatewaySkipFilterWithin(tenantID string) time.Duration
 }

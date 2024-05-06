@@ -48,6 +48,7 @@ func newLimits() *validation.Overrides {
 	flagext.DefaultValues(&limits)
 	limits.BloomGatewayEnabled = true
 	limits.BloomGatewayShardSize = 1
+	limits.BloomGatewaySkipFilterWithin = 0
 
 	overrides, _ := validation.NewOverrides(limits, nil)
 	return overrides

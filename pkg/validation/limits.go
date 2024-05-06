@@ -198,6 +198,7 @@ type Limits struct {
 
 	BloomGatewayShardSize        int           `yaml:"bloom_gateway_shard_size" json:"bloom_gateway_shard_size" category:"experimental"`
 	BloomGatewayEnabled          bool          `yaml:"bloom_gateway_enable_filtering" json:"bloom_gateway_enable_filtering" category:"experimental"`
+	BloomGatewaySkipFilterWithin time.Duration `yaml:"bloom_gateway_skip_filter_within" json:"bloom_gateway_skip_filter_within" category:"experimental"`
 	BloomGatewayCacheKeyInterval time.Duration `yaml:"bloom_gateway_cache_key_interval" json:"bloom_gateway_cache_key_interval" category:"experimental"`
 
 	BloomCompactorShardSize    int              `yaml:"bloom_compactor_shard_size" json:"bloom_compactor_shard_size" category:"experimental"`
@@ -364,6 +365,7 @@ func (l *Limits) RegisterFlags(f *flag.FlagSet) {
 
 	f.IntVar(&l.BloomGatewayShardSize, "bloom-gateway.shard-size", 0, "Experimental. The shard size defines how many bloom gateways should be used by a tenant for querying.")
 	f.BoolVar(&l.BloomGatewayEnabled, "bloom-gateway.enable-filtering", false, "Experimental. Whether to use the bloom gateway component in the read path to filter chunks.")
+	f.DurationVar(&l.BloomGatewaySkipFilterWithin, "bloom-gateway.skip-filter-within", 24*time.Hour, "Experimental. Skip attempts to filter chunks that are newer than `skip-filter-within`.")
 
 	f.IntVar(&l.BloomCompactorShardSize, "bloom-compactor.shard-size", 0, "Experimental. The shard size defines how many bloom compactors should be used by a tenant when computing blooms. If it's set to 0, shuffle sharding is disabled.")
 	f.BoolVar(&l.BloomCompactorEnabled, "bloom-compactor.enable-compaction", false, "Experimental. Whether to compact chunks into bloom filters.")
@@ -964,6 +966,10 @@ func (o *Overrides) BloomGatewayCacheKeyInterval(userID string) time.Duration {
 
 func (o *Overrides) BloomGatewayEnabled(userID string) bool {
 	return o.getOverridesForUser(userID).BloomGatewayEnabled
+}
+
+func (o *Overrides) BloomGatewaySkipFilterWithin(userID string) time.Duration {
+	return o.getOverridesForUser(userID).BloomGatewaySkipFilterWithin
 }
 
 func (o *Overrides) BloomCompactorShardSize(userID string) int {
