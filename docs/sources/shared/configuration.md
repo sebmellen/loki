@@ -3336,6 +3336,11 @@ shard_streams:
 # CLI flag: -bloom-gateway.enable-filtering
 [bloom_gateway_enable_filtering: <boolean> | default = false]
 
+# Experimental. Skip attempts to filter chunks that are newer than
+# `skip-filter-within`.
+# CLI flag: -bloom-gateway.skip-filter-within
+[bloom_gateway_skip_filter_within: <duration> | default = 24h]
+
 # Experimental. Interval for computing the cache key in the Bloom Gateway.
 # CLI flag: -bloom-gateway.cache-key-interval
 [bloom_gateway_cache_key_interval: <duration> | default = 15m]
